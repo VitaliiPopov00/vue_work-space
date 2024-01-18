@@ -10,7 +10,7 @@
             <div class="filter__form__title">
                 <p class="filter__form__title__text">Фильтр</p>
 
-                <input type="reset" value="Очистить" class="filter__form__reset" />
+                <input @click.prevent="clearValue" type="reset" value="Очистить" class="filter__form__reset" />
             </div>
 
             <my-select
@@ -24,44 +24,44 @@
                     <input 
                         type="text" 
                         class="filter__form_item__input" 
-                        name="min_salary" 
+                        name="pay-from" 
                         id="salary" 
                         placeholder="от"
-                        v-model="filters.min_salary"
-                        @input="validateSalary('min_salary', $event)"
-                        :class="{ input_error: errors_input.min_salary}"
+                        v-model="filters['pay-from']"
+                        @input="validateSalary('pay-from', $event)"
+                        :class="{ input_error: errors_input['pay-from']}"
                     />
                     <input 
                         type="text" 
                         class="filter__form_item__input" 
-                        name="max_salary" 
+                        name="pay-to" 
                         id="salary" 
                         placeholder="до" 
-                        v-model="filters.max_salary"
-                        @input="validateSalary('max_salary', $event)"
-                        :class="{ input_error: errors_input.max_salary}"
+                        v-model="filters['pay-to']"
+                        @input="validateSalary('pay-to', $event)"
+                        :class="{ input_error: errors_input['pay-to']}"
                     />
                 </div>
             </div>
 
             <checkbox-list
-                :label="workFormat.label"
-                v-model:checkboxes="workFormat.checkboxes"
+                :label="filters.format.label"
+                v-model:checkboxes="filters.format.checkboxes"
             />
 
             <checkbox-list
-                :label="experience.label"
-                v-model:checkboxes="experience.checkboxes"
+                :label="filters.experience.label"
+                v-model:checkboxes="filters.experience.checkboxes"
             />
 
             <checkbox-list
-                :label="employment.label"
-                v-model:checkboxes="employment.checkboxes"
+                :label="filters.type.label"
+                v-model:checkboxes="filters.type.checkboxes"
             />
 
             <div class="filter__form__operation">
-                <input type="submit" class="filter__form__submit btn" value="Применить" />
-                <input type="reset" class="filter__form__reset no-show" value="Очистить" />
+                <input type="submit" class="filter__form__submit btn" value="Применить" @click.prevent="$emit('vacancy', this.filters)"/>
+                <input type="reset" @click.prevent="clearValue" class="filter__form__reset no-show" value="Очистить" />
             </div>
         </form>
     </aside>
@@ -72,6 +72,12 @@ import mySelect from '@/components/UI/mySelect.vue';
 import checkboxList from '@/components/UI/checkboxList.vue';
 
 export default {
+    props: {
+        cities: {
+            type: Array,
+            required: true,
+        },
+    },
     components: {
         mySelect,
         checkboxList,
@@ -80,94 +86,93 @@ export default {
         return {
             filters: {
                 city: '',
-                min_salary: '',
-                max_salary: '',
+                'pay-from': '',
+                'pay-to': '',
+                format: {
+                    label: "Формат",
+                    checkboxes: [
+                        {
+                            id: 1,
+                            label: "Офис",
+                            name: "Офис",
+                            value: false,
+                        },
+                        {
+                            id: 2,
+                            label: "Удаленный",
+                            name: "Удаленный",
+                            value: false,
+                        },
+                        {
+                            id: 3,
+                            label: "Гибкий",
+                            name: "Гибкий",
+                            value: false,
+                        },
+                    ],
+                },
+                experience: {
+                    label: "Опыт работы",
+                    checkboxes: [
+                        {
+                            id: 1,
+                            label: "Не важно",
+                            name: "Не важно",
+                            value: false,
+                        },
+                        {
+                            id: 2,
+                            label: "Без опыта",
+                            name: "Без опыта",
+                            value: false,
+                        },
+                        {
+                            id: 3,
+                            label: "От 1 года до 3-х лет",
+                            name: "От 1 года до 3-х лет",
+                            value: false,
+                        },
+                        {
+                            id: 4,
+                            label: "От 3-х лет",
+                            name: "От 3-х лет",
+                            value: false,
+                        },
+                    ],
+                },
+                type: {
+                    label: "Занятость",
+                    checkboxes: [
+                        {
+                            id: 1,
+                            label: "Полная",
+                            name: "Полная",
+                            value: false,
+                        },
+                        {
+                            id: 2,
+                            label: "Частичная",
+                            name: "Частичная",
+                            value: false,
+                        },
+                        {
+                            id: 3,
+                            label: "Стажировка",
+                            name: "Стажировка",
+                            value: false,
+                        },
+                        {
+                            id: 4,
+                            label: "Проектная работа",
+                            name: "Проектная работа",
+                            value: false,
+                        },
+                    ],
+                },
             },
             errors_input: {
-                min_salary: false,
-                max_salary: false,
-            },
-            cities: [],
-            workFormat: {
-                label: "Формат",
-                checkboxes: [
-                    {
-                        id: 1,
-                        label: "Офис",
-                        name: "format_office",
-                        value: false,
-                    },
-                    {
-                        id: 2,
-                        label: "Удаленный",
-                        name: "format_remote",
-                        value: false,
-                    },
-                    {
-                        id: 3,
-                        label: "Гибкий",
-                        name: "format_flexible",
-                        value: false,
-                    },
-                ],
-            },
-            experience: {
-                label: "Опыт работы",
-                checkboxes: [
-                    {
-                        id: 1,
-                        label: "Не важно",
-                        name: "experience_no_important",
-                        value: false,
-                    },
-                    {
-                        id: 2,
-                        label: "Без опыта",
-                        name: "experience_none",
-                        value: false,
-                    },
-                    {
-                        id: 3,
-                        label: "От 1 года до 3-х лет",
-                        name: "experience_middle",
-                        value: false,
-                    },
-                    {
-                        id: 4,
-                        label: "От 3-х лет",
-                        name: "experience_big",
-                        value: false,
-                    },
-                ],
-            },
-            employment: {
-                label: "Занятость",
-                checkboxes: [
-                    {
-                        id: 1,
-                        label: "Полная",
-                        name: "employment_full",
-                        value: false,
-                    },
-                    {
-                        id: 2,
-                        label: "Частичная",
-                        name: "employment_middle",
-                        value: false,
-                    },
-                    {
-                        id: 3,
-                        label: "Стажировка",
-                        name: "employment_intership",
-                        value: false,
-                    },
-                    {
-                        id: 4,
-                        label: "Проектная работа",
-                        name: "employment_project",
-                        value: false,
-                    },
-                ],
+                'pay-from': false,
+                'pay-to': false,
             },
             homeUrl: "https://workspace-methed.vercel.app",
         }
@@ -177,18 +182,18 @@ export default {
             const value = Number(event.target.value);
             this.errors_input[name] = isNaN(value) || value < 0;
         },
-        async fetchCities() {
-            try {
-                let response = await fetch(this.homeUrl + "/api/locations");
-                this.cities = await response.json();
-            } catch (e) {
-
+        clearValue() {
+            for (let name in this.filters) {
+                if ((typeof this.filters[name]) == 'object') {
+                    this.filters[name].checkboxes.forEach(checkbox => {
+                        checkbox.value = false;
+                    });
+                } else {
+                    this.filters[name] = '';
+                }
             }
-        },
+        }
     },
-    mounted() {
-        this.fetchCities();
-    }
 }
 </script>
 

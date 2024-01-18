@@ -13,30 +13,15 @@
 import workItem from '@/components/UI/workItem.vue';
 
 export default {
+    props: {
+        works: {
+            type: Array,
+            required: true,
+        }
+    },
     components: {
         workItem,
     },
-    data() {
-        return {
-            works: [],
-            homeUrl: "https://workspace-methed.vercel.app",
-        }
-    },
-    methods: {
-        async fetchVacancy()
-        {
-            try {
-                let response = await fetch(this.homeUrl + "/api/vacancy");
-                let data = await response.json();
-                this.works = data.vacancies;
-            } catch (e) {
-
-            }
-        },
-    },
-    mounted() {
-        this.fetchVacancy();
-    }
 }
 </script>
 
@@ -45,6 +30,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    align-self: flex-start;
 }
 
 @media (max-width: 1024px) {
